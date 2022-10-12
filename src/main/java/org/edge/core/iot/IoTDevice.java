@@ -35,12 +35,13 @@ public abstract class IoTDevice extends SimEntity {
 	private static final int pesNumber = 1;
 	public static int cloudLetId = 0;
 	private static final double MOVE_INTERVAL = 0.5d;
-	private boolean logPrinted=false;
+	private boolean logPrinted = false;
 	/**
 	 * size of the data package
 	 */
 	private int brokerId;
 	private int assigmentIoTId;
+
 	public NetworkDelayCalculationPolicy getNetworkDelayCalculationPolicy() {
 		return this.networkDelayCalculationPolicy;
 	}
@@ -50,6 +51,7 @@ public abstract class IoTDevice extends SimEntity {
 	}
 
 	private NetworkDelayCalculationPolicy networkDelayCalculationPolicy;
+
 	public int getAssigmentIoTId() {
 		return this.assigmentIoTId;
 	}
@@ -103,9 +105,11 @@ public abstract class IoTDevice extends SimEntity {
 	protected double send_data_size;
 	protected double battery_drainage_rate;
 	private int attachedEdgeDeviceVMId;
+
 	public void setAttachedEdgeDeviceVMId(int attachedEdgeDeviceVMId) {
 		this.attachedEdgeDeviceVMId = attachedEdgeDeviceVMId;
 	}
+
 	private MovingPolicy movingPolicy;
 
 	public MovingPolicy getMovingPolicy() {
@@ -219,7 +223,7 @@ public abstract class IoTDevice extends SimEntity {
 	 * @return
 	 */
 	private void generateData() {
-		//		LogUtil.info("iot " + getId() + " is generating data");
+		// LogUtil.info("iot " + getId() + " is generating data");
 		this.schedule(this.getId(), this.dataGenerationTime, EdgeState.GENERATING);
 	}
 
@@ -242,6 +246,7 @@ public abstract class IoTDevice extends SimEntity {
 
 	/**
 	 * for now, it can only send one edge let at a time
+	 * 
 	 * @param dataPackage
 	 */
 	private void sendData(EdgeLet dataPackage) {
@@ -267,23 +272,26 @@ public abstract class IoTDevice extends SimEntity {
 	}
 
 	/**
-	 * send data,  no matter  it has connection or does not have due to range problem
+	 * send data, no matter it has connection or does not have due to range problem
+	 * 
 	 * @param dataPackage
 	 */
 	private void sending(EdgeLet dataPackage) {
-		LogUtil.info(CloudSim.clock()+ " "+this.getClass().getSimpleName()+" " + this.getId() + " is sending data");
-		ConnectionHeader connectionHeader = new ConnectionHeader(this.attachedEdgeDeviceVMId, this.getId(), this.brokerId,
+		LogUtil.info(
+				CloudSim.clock() + " " + this.getClass().getSimpleName() + " " + this.getId() + " is sending data");
+		ConnectionHeader connectionHeader = new ConnectionHeader(this.attachedEdgeDeviceVMId, this.getId(),
+				this.brokerId,
 				this.getNetworkModel().getCommunicationProtocol().getClass());
-		if(this.getMobility().movable) {
-			connectionHeader.direction=this.getMobility().volecity>0?Direction.RIGHT:Direction.LEFT;
-			
+		if (this.getMobility().movable) {
+			connectionHeader.direction = this.getMobility().volecity > 0 ? Direction.RIGHT : Direction.LEFT;
+
 		}
 		dataPackage.setConnectionHeader(connectionHeader);
-//		double speed = this.getTransmissionSpeed();
+		// double speed = this.getTransmissionSpeed();
 
 		this.send(this.brokerId, this.getNetworkDelay(), EdgeState.SENDING_TO_EDGE, dataPackage);
 		this.dataPackagesSent.add(dataPackage);
-		this.send(this.getId(),this.data_frequency , EdgeState.SENSING);
+		this.send(this.getId(), this.data_frequency, EdgeState.SENSING);
 	}
 
 	public abstract double getNetworkDelay();
@@ -292,9 +300,10 @@ public abstract class IoTDevice extends SimEntity {
 		// if the battery is drained,
 		if (this.updateBatteryByTransmission(this.battery)) {
 			this.runningTime = CloudSim.clock();
-			LogUtil.info(this.getClass().getSimpleName()+" "+this.getId()+"'s battery has ran out when transmitting");
-			if(this.getMobility().movable) {
-				LogUtil.info("and it has moved "+this.mobility.totalMovingDistance+ " units");
+			LogUtil.info(
+					this.getClass().getSimpleName() + " " + this.getId() + "'s battery has ran out when transmitting");
+			if (this.getMobility().movable) {
+				LogUtil.info("and it has moved " + this.mobility.totalMovingDistance + " units");
 			}
 			this.setEnabled(false);
 			return false;
@@ -324,7 +333,7 @@ public abstract class IoTDevice extends SimEntity {
 	public abstract double getTransmissionSpeed();
 
 	public void process_data(EdgeLet generated_data) {
-		//		LogUtil.info("iot " + getId() + " is processing data");
+		// LogUtil.info("iot " + getId() + " is processing data");
 		EdgeLet processedData = this.processData(generated_data);
 		this.schedule(this.getId(), 0, EdgeState.PROCESS_COMPLETED, processedData);
 	}
@@ -353,14 +362,16 @@ public abstract class IoTDevice extends SimEntity {
 
 	protected void updateGeolocation() {
 
-		if(this.movingPolicy!=null) {
-			//this.getMobility().location.x=this.getMobility().location.x+this.getMobility().volecity;
-			LogUtil.info(this.getClass().getSimpleName()+" " + this.getId() +" Location is:"+this.getMobility().location.x);
+		if (this.movingPolicy != null) {
+			// this.getMobility().location.x=this.getMobility().location.x+this.getMobility().volecity;
+			LogUtil.info(this.getClass().getSimpleName() + " " + this.getId() + " Location is:"
+					+ this.getMobility().location.x);
 			this.movingPolicy.updateLocation(this.getMobility());
-		}else {
-			this.movingPolicy=new SimpleMovingPolicy();
-			//this.getMobility().location.x=this.getMobility().location.x+this.getMobility().volecity;
-			LogUtil.info(this.getClass().getSimpleName()+" " + this.getId() +" Location is:"+this.getMobility().location.x);
+		} else {
+			this.movingPolicy = new SimpleMovingPolicy();
+			// this.getMobility().location.x=this.getMobility().location.x+this.getMobility().volecity;
+			LogUtil.info(this.getClass().getSimpleName() + " " + this.getId() + " Location is:"
+					+ this.getMobility().location.x);
 			this.movingPolicy.updateLocation(this.mobility);
 		}
 	}
@@ -370,107 +381,111 @@ public abstract class IoTDevice extends SimEntity {
 		int tag = ev.getTag();
 		switch (tag) {
 
-		case EdgeState.REQUEST_DISCONNECTION:
-			this.attachedEdgeDeviceVMId = -1;
-			this.setEnabled(false);
-			LogUtil.info(this.getClass().getSimpleName()+" " + this.getId() + " gets disconnected with edge device " + this.attachedEdgeDeviceVMId);
-			if (ev.getData() != null && ev.getData() instanceof String) {
-				String data = (String) ev.getData();
-				LogUtil.info(data);
-			}
-			break;
-		case EdgeState.REQUEST_CONNECTION:
+			case EdgeState.REQUEST_DISCONNECTION:
+				this.attachedEdgeDeviceVMId = -1;
+				this.setEnabled(false);
+				LogUtil.info(this.getClass().getSimpleName() + " " + this.getId()
+						+ " gets disconnected with edge device " + this.attachedEdgeDeviceVMId);
+				if (ev.getData() != null && ev.getData() instanceof String) {
+					String data = (String) ev.getData();
+					LogUtil.info(data);
+				}
+				break;
+			case EdgeState.REQUEST_CONNECTION:
 
-			ConnectionHeader info = (ConnectionHeader) ev.getData();
-			LogUtil.info("received request for connection from broker" + info.brokeId);
-			info.sourceId = info.ioTId;
-			if (this.attachedEdgeDeviceVMId == NULL_DEVICE) {
-				this.brokerId = info.brokeId;
-				info.state = EdgeState.SUCCESS;
-				LogUtil.info("ack request to broker " + info.brokeId);
-				this.send(info.brokeId, this.getNetworkDelay(), EdgeState.CONNECTING_ACK, info);
-			} else {
-				info.state = EdgeState.FAILURE;
-				this.send(info.brokeId, this.getNetworkDelay(), EdgeState.CONNECTING_ACK, info);
-			}
-
-			break;
-		case EdgeState.CONNECTION_ESTABLISHED:
-
-			ConnectionHeader info2 = (ConnectionHeader) ev.getData();
-			this.attachedEdgeDeviceVMId = info2.vmId;
-			LogUtil.info(CloudSim.clock()+ " "+
-					this.getClass().getSimpleName()+" " + this.getId() + " has established connection with vm " + info2.vmId + " and start to sense");
-			this.setEnabled(true);
-			this.send(this.getId(), this.data_frequency, EdgeState.SENSING);
-			break;
-		case EdgeState.DISCONNECTED:
-			Object data = ev.getData();
-			if(data instanceof String) {
-				String result=(String) data;
-				if(result.equals(EdgeState.UNSUPPORTED_COMMUNICATION_PROTOCOL) || result.equals(EdgeState.UNSUPPORTED_IOT_DEVICE)) {
-					shutDownDevice();
+				ConnectionHeader info = (ConnectionHeader) ev.getData();
+				LogUtil.info("received request for connection from broker" + info.brokeId);
+				info.sourceId = info.ioTId;
+				if (this.attachedEdgeDeviceVMId == NULL_DEVICE) {
+					this.brokerId = info.brokeId;
+					info.state = EdgeState.SUCCESS;
+					LogUtil.info("ack request to broker " + info.brokeId);
+					this.send(info.brokeId, this.getNetworkDelay(), EdgeState.CONNECTING_ACK, info);
+				} else {
+					info.state = EdgeState.FAILURE;
+					this.send(info.brokeId, this.getNetworkDelay(), EdgeState.CONNECTING_ACK, info);
 				}
 
-			}else {
-				this.attachedEdgeDeviceVMId = NULL_DEVICE;
-				this.setEnabled(false);
-			}
-			break;
+				break;
+			case EdgeState.CONNECTION_ESTABLISHED:
 
-		case EdgeState.SENSING:
-			//			LogUtil.info("ioT " + getId() + " start to sense");
-			this.sensing();
-			break;
-		case EdgeState.GENERATING:
-			EdgeLet edgeLet = this.generateEdgeLet();
+				ConnectionHeader info2 = (ConnectionHeader) ev.getData();
+				this.attachedEdgeDeviceVMId = info2.vmId;
+				LogUtil.info(CloudSim.clock() + " " +
+						this.getClass().getSimpleName() + " " + this.getId() + " has established connection with vm "
+						+ info2.vmId + " and start to sense");
+				this.setEnabled(true);
+				this.send(this.getId(), this.data_frequency, EdgeState.SENSING);
+				break;
+			case EdgeState.DISCONNECTED:
+				Object data = ev.getData();
+				if (data instanceof String) {
+					String result = (String) data;
+					if (result.equals(EdgeState.UNSUPPORTED_COMMUNICATION_PROTOCOL)
+							|| result.equals(EdgeState.UNSUPPORTED_IOT_DEVICE)) {
+						shutDownDevice();
+					}
 
-			this.process_data(edgeLet);
-			break;
-		case EdgeState.PROCESS_COMPLETED:
+				} else {
+					this.attachedEdgeDeviceVMId = NULL_DEVICE;
+					this.setEnabled(false);
+				}
+				break;
 
-			EdgeLet processedData = (EdgeLet) ev.getData();
+			case EdgeState.SENSING:
+				// LogUtil.info("ioT " + getId() + " start to sense");
+				this.sensing();
+				break;
+			case EdgeState.GENERATING:
+				EdgeLet edgeLet = this.generateEdgeLet();
 
-			this.sendData(processedData);
+				this.process_data(edgeLet);
+				break;
+			case EdgeState.PROCESS_COMPLETED:
 
-			break;
-		case EdgeState.SENDING_TO_EDGE:
+				EdgeLet processedData = (EdgeLet) ev.getData();
 
-			break;
-		case EdgeState.REQUEST_ACTUATING:
+				this.sendData(processedData);
 
-			this.actuating(ev);
-			break;
+				break;
+			case EdgeState.SENDING_TO_EDGE:
 
-		case EdgeState.NO_AVAILIBLE_DEVICE:
-			ConnectionHeader connectionHeader = (ConnectionHeader) ev.getData();
-			this.brokerId = connectionHeader.brokeId;
-			this.attachedEdgeDeviceVMId = -1;
-			this.enabled = false;
-			break;
+				break;
+			case EdgeState.REQUEST_ACTUATING:
 
-		case EdgeState.MOVING:
+				this.actuating(ev);
+				break;
 
-			if (this.attachedEdgeDeviceVMId == NULL_DEVICE) {
-				ConnectionHeader connectionHeader2 =new ConnectionHeader(attachedEdgeDeviceVMId,getId(),brokerId,getNetworkModel().getCommunicationProtocol().getClass());
-				connectionHeader2.brokeId=brokerId;
-				connectionHeader2.ioTId=getId();
+			case EdgeState.NO_AVAILIBLE_DEVICE:
+				ConnectionHeader connectionHeader = (ConnectionHeader) ev.getData();
+				this.brokerId = connectionHeader.brokeId;
+				this.attachedEdgeDeviceVMId = -1;
+				this.enabled = false;
+				break;
 
-				this.send(this.brokerId, 0, EdgeState.REQUEST_CONNECTION, connectionHeader2);
-			}
-			if(!this.getMobility().movable)
-				return ;
-			if (this.updateBatteryByMoving())
-				return;
-			this.updateGeolocation();
-			this.send(this.getId(), MOVE_INTERVAL, EdgeState.MOVING, ev.getData());
-			break;
+			case EdgeState.MOVING:
+
+				if (this.attachedEdgeDeviceVMId == NULL_DEVICE) {
+					ConnectionHeader connectionHeader2 = new ConnectionHeader(attachedEdgeDeviceVMId, getId(), brokerId,
+							getNetworkModel().getCommunicationProtocol().getClass());
+					connectionHeader2.brokeId = brokerId;
+					connectionHeader2.ioTId = getId();
+
+					this.send(this.brokerId, 0, EdgeState.REQUEST_CONNECTION, connectionHeader2);
+				}
+				if (!this.getMobility().movable)
+					return;
+				if (this.updateBatteryByMoving())
+					return;
+				this.updateGeolocation();
+				this.send(this.getId(), MOVE_INTERVAL, EdgeState.MOVING, ev.getData());
+				break;
 		}
 
 	}
 
 	private void shutDownDevice() {
-		LogUtil.info("iot "+getId()+ " is shuting down");
+		LogUtil.info("iot " + getId() + " is shuting down");
 		getBattery().setCurrentCapacity(0);
 		setEnabled(false);
 
@@ -502,9 +517,10 @@ public abstract class IoTDevice extends SimEntity {
 			LogUtil.info(this.getClass().getSimpleName() + " running time： " + CloudSim.clock());
 
 			this.setEnabled(false);
-			LogUtil.info(this.getClass().getSimpleName()+" " + this.getId() + "'s battery has been drained");
+			LogUtil.info(this.getClass().getSimpleName() + " " + this.getId() + "'s battery has been drained");
 			this.runningTime = CloudSim.clock();
-			this.schedule(this.brokerId, 0, EdgeState.BATTERY_DRAINED, new DevicesInfo(this.getId(), this.attachedEdgeDeviceVMId));
+			this.schedule(this.brokerId, 0, EdgeState.BATTERY_DRAINED,
+					new DevicesInfo(this.getId(), this.attachedEdgeDeviceVMId));
 			return;
 		}
 
@@ -538,22 +554,27 @@ public abstract class IoTDevice extends SimEntity {
 		boolean updateBatteryByActuating = this.updateBatteryByActuating(this.battery);
 		if (updateBatteryByActuating) {
 			this.setEnabled(false);
-			this.schedule(this.brokerId, 0, EdgeState.BATTERY_DRAINED, new DevicesInfo(this.getId(), this.attachedEdgeDeviceVMId));
-			LogUtil.info(this.getClass().getSimpleName() +" "+this.getId()+ " running time： " + CloudSim.clock());
+			this.schedule(this.brokerId, 0, EdgeState.BATTERY_DRAINED,
+					new DevicesInfo(this.getId(), this.attachedEdgeDeviceVMId));
+			LogUtil.info(this.getClass().getSimpleName() + " " + this.getId() + " running time： " + CloudSim.clock());
 		} else {
-			if(isEnabled()) {
+			if (isEnabled()) {
 				EdgeLet edgeLet = (EdgeLet) ev.getData();
-				LogUtil.info("Insied IoT "+this.assigmentIoTId +"EdgeLet"+edgeLet.getCloudletId() +"edgeLet lenght"+ edgeLet.getCloudletLength());
-				LogUtil.info(CloudSim.clock()+ " "+this.getClass().getSimpleName()+" "+this.getId()+" received processed edgelet "+edgeLet.getCloudletId()+" from vm "+edgeLet.getVmId()  + " and start actuating");
-			}else {
-				if(!logPrinted) {
-					LogUtil.info(CloudSim.clock()+" "+this.getClass().getSimpleName()+" "+this.getId()+"  has offline");
-					logPrinted=true;
+				LogUtil.info("Insied IoT " + this.assigmentIoTId + "EdgeLet" + edgeLet.getCloudletId()
+						+ "edgeLet lenght" + edgeLet.getCloudletLength());
+				LogUtil.info(CloudSim.clock() + " " + this.getClass().getSimpleName() + " " + this.getId()
+						+ " received processed edgelet " + edgeLet.getCloudletId() + " from vm " + edgeLet.getVmId()
+						+ " and start actuating");
+			} else {
+				if (!logPrinted) {
+					LogUtil.info(CloudSim.clock() + " " + this.getClass().getSimpleName() + " " + this.getId()
+							+ "  has offline");
+					logPrinted = true;
 				}
 
 			}
 
-			//			send(getId(), data_frequency, EdgeState.SENSING);
+			// send(getId(), data_frequency, EdgeState.SENSING);
 		}
 
 	}

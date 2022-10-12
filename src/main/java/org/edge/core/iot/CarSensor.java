@@ -15,7 +15,7 @@ public class CarSensor extends IoTDevice {
 
 	static EdgeLet edgeLet;
 	static {
-		edgeLet = new EdgeLet(EdgeLet.id++,1000, 1, 30, 10, new UtilizationModelFull(), new UtilizationModelFull(),
+		edgeLet = new EdgeLet(EdgeLet.id++, 1000, 1, 30, 10, new UtilizationModelFull(), new UtilizationModelFull(),
 				new UtilizationModelFull());
 	}
 	public static final double DATA_GENERATION_TIME = 1;
@@ -41,25 +41,20 @@ public class CarSensor extends IoTDevice {
 				PROCESSING_ABILITY, edgeLet);
 	}
 
-
 	@Override
 	public boolean updateBatteryBySensing(Battery battery) {
-		battery.setCurrentCapacity(battery.getCurrentCapacity()-this.battery_drainage_rate);
-		if(battery.getCurrentCapacity()<0)
-			return  true;
+		battery.setCurrentCapacity(battery.getCurrentCapacity() - this.battery_drainage_rate);
+		if (battery.getCurrentCapacity() < 0)
+			return true;
 		return false;
-
-
 
 	}
 
-
-
 	@Override
 	public boolean updateBatteryByProcessing(Battery battery) {
-		battery.setCurrentCapacity(battery.getCurrentCapacity()-this.getProcessingAbility());
-		if(battery.getCurrentCapacity()<0)
-			return  true;
+		battery.setCurrentCapacity(battery.getCurrentCapacity() - this.getProcessingAbility());
+		if (battery.getCurrentCapacity() < 0)
+			return true;
 		return false;
 	}
 
@@ -68,78 +63,63 @@ public class CarSensor extends IoTDevice {
 		NetworkModel networkModel = this.getNetworkModel();
 
 		float batteryConsumptionSpeed = networkModel.getCommunicationProtocol().getBatteryDrainageRate();
-		battery.setCurrentCapacity(battery.getCurrentCapacity()-batteryConsumptionSpeed);
-		if(battery.getCurrentCapacity()<0)
-			return  true;
+		battery.setCurrentCapacity(battery.getCurrentCapacity() - batteryConsumptionSpeed);
+		if (battery.getCurrentCapacity() < 0)
+			return true;
 		return false;
 	}
 
 	@Override
-	public double getTransmissionSpeed()   {
+	public double getTransmissionSpeed() {
 
-
-		//if the communication speed is slower than the NetworkType speed,
-		//then use communication speed. otherwise, use NetworkType speed.
+		// if the communication speed is slower than the NetworkType speed,
+		// then use communication speed. otherwise, use NetworkType speed.
 		//
 		float transmissionSpeed = this.getNetworkModel().getCommunicationProtocol().getTransmissionSpeed();
 		NetworkType netWorkType = this.getNetworkModel().getNetWorkType();
 		double speedRate = netWorkType.getSpeedRate();
 
-		int connectedEdgeDevice =this.getAttachedEdgeDeviceId();
-		if(connectedEdgeDevice==-1)
-			throw new NullConnectionException("there is no connection with loT  device "+ this.getId());
-		if(transmissionSpeed<=speedRate)
+		int connectedEdgeDevice = this.getAttachedEdgeDeviceId();
+		if (connectedEdgeDevice == -1)
+			throw new NullConnectionException("there is no connection with loT  device " + this.getId());
+		if (transmissionSpeed <= speedRate)
 			return transmissionSpeed;
 
 		return speedRate;
 	}
-
-
-
-
-
-
 
 	@Override
 	public void startEntity() {
 		super.startEntity();
 	}
 
-
-
 	@Override
 	public void processEvent(SimEvent ev) {
 		super.processEvent(ev);
 	}
-
-
 
 	@Override
 	public void shutdownEntity() {
 
 	}
 
-
-
-
 	@Override
 	public double getNetworkDelay() {
 		int attachedEdgeDeviceId2 = this.getAttachedEdgeDeviceId();
-		if(attachedEdgeDeviceId2==-1)
+		if (attachedEdgeDeviceId2 == -1)
 			return 0;
 
 		NetworkDelayCalculationPolicy networkDelayCalculationPolicy = this.getNetworkDelayCalculationPolicy();
-		if(networkDelayCalculationPolicy==null) {
-			networkDelayCalculationPolicy=new SimpleNetworkDelayCalculator();
+		if (networkDelayCalculationPolicy == null) {
+			networkDelayCalculationPolicy = new SimpleNetworkDelayCalculator();
 			this.setNetworkDelayCalculationPolicy(networkDelayCalculationPolicy);
 		}
 
-		double networkDelay = networkDelayCalculationPolicy.getNetworkDelay(this.getNetworkModel(), edgeLet, this.getMobility(), null);
+		double networkDelay = networkDelayCalculationPolicy.getNetworkDelay(this.getNetworkModel(), edgeLet,
+				this.getMobility(), null);
 
 		return networkDelay;
 	}
-
-
 
 	@Override
 	public EdgeLet processData(EdgeLet generated_data) {

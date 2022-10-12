@@ -153,7 +153,7 @@ public class ConfiguationEntity {
 		String type;
 		String edgeOperationClass;
 		float datasizeShrinkFactor;
-		
+
 	}
 
 	@Data
@@ -215,10 +215,12 @@ public class ConfiguationEntity {
 		private MovingRangeEntity range;
 		private double signalRange;
 		private Location location;
+
 		public MobilityEntity(Location location) {
 			super();
 			this.location = location;
 		}
+
 		public MobilityEntity() {
 			super();
 		}
